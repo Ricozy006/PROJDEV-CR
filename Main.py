@@ -2,8 +2,42 @@ import pygame
 import sys
 import random
 from PIL import Image
+import sqlite3
 
-# --- Function to load GIF frames into Pygame ---
+# ------------------ DATABASE ------------------
+conn = sqlite3.connect("crossy_cat.db")
+c = conn.cursor()
+c.execute("""
+CREATE TABLE IF NOT EXISTS scores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    score INTEGER
+)
+""")
+conn.commit()
+
+# ------------------ PYGAME SETUP ------------------
+pygame.init()
+TILE_SIZE = 80
+PLAYABLE_WIDTH = 8
+GRID_WIDTH = PLAYABLE_WIDTH + 2
+WIDTH, HEIGHT = GRID_WIDTH * TILE_SIZE, 9 * TILE_SIZE
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Crossy Cat")
+clock = pygame.time.Clock()
+
+# ------------------ COLORS ------------------
+WHITE = (255, 255, 255)
+GRAY = (200, 200, 200)
+BROWN = (139, 69, 19)
+GREEN = (34, 139, 34)
+BLACK = (0, 0, 0)
+ROAD_GRAY = (50, 50, 50)
+RED = (255, 0, 0)
+GREEN_BTN = (0, 200, 0)
+GRAY_BTN = (100, 100, 100)
+
+# ------------------ GIF LOADER ------------------
 def load_gif(filename, size):
     pil_image = Image.open(filename)
     frames = []
@@ -20,16 +54,6 @@ def load_gif(filename, size):
         pass
     return frames
 
-# --- Pygame setup ---
-pygame.init()
-TILE_SIZE = 80
-PLAYABLE_WIDTH = 8  # playable tiles in the middle
-GRID_WIDTH = PLAYABLE_WIDTH + 2  # add 1 wall tile on each side
-WIDTH, HEIGHT = GRID_WIDTH * TILE_SIZE, 9 * TILE_SIZE
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-
-# --- Load cat GIFs for each direction ---
 cat_frames = {
     "up": load_gif("catup.gif", (TILE_SIZE, TILE_SIZE)),
     "down": load_gif("catdown.gif", (TILE_SIZE, TILE_SIZE)),
@@ -37,35 +61,28 @@ cat_frames = {
     "right": load_gif("catright.gif", (TILE_SIZE, TILE_SIZE)),
 }
 
-player_row, player_col = 5, GRID_WIDTH // 2  # start near center
-frame_index = 0
-frame_timer = 0
-ANIM_SPEED = 8
-score = 0
-farthest_row = player_row
+# ------------------ CAR IMAGES ------------------
+def load_car_images():
+    car_files = ["car1.png", "car2.png"]
+    cars = []
+    for f in car_files:
+        img = pygame.image.load(f).convert_alpha()
+        img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+        cars.append(img)
+    return cars
 
-# Colors
-WHITE = (255, 255, 255)
-GRAY = (200, 200, 200)
-BROWN = (139, 69, 19)
-GREEN = (34, 139, 34)
-BLACK = (0, 0, 0)
-ROAD_COLOR = (50, 50, 50)
-CAR_COLOR = (200, 0, 0)
+car_images = load_car_images()
+cars = []
 
-# Font
-font = pygame.font.SysFont("Arial", 32, bold=True)
-
-# --- World data ---
+# ------------------ WORLD ------------------
 world = {}
 row_types = {}
-row_directions = {}  # road rows: left or right
-cars = []  # active cars
+row_directions = {}
 
-# --- World generation ---
 def get_row_type(row):
     if row not in row_types:
-        if random.random() < 0.15:
+        r = random.random()
+        if r < 0.2:
             row_types[row] = "road"
             row_directions[row] = random.choice(["left", "right"])
         else:
@@ -75,7 +92,6 @@ def get_row_type(row):
 def get_tile(row, col):
     if col == 0 or col == GRID_WIDTH - 1:
         return "wall"
-
     row_type = get_row_type(row)
     if row_type == "road":
         return "road"
@@ -90,157 +106,212 @@ def get_tile(row, col):
 def draw_grid(camera_y):
     start_row = camera_y // TILE_SIZE
     end_row = (camera_y + HEIGHT) // TILE_SIZE + 1
-
     for row in range(start_row, end_row):
+        row_type = get_row_type(row)
         for col in range(GRID_WIDTH):
             rect = pygame.Rect(
                 col * TILE_SIZE,
                 row * TILE_SIZE - camera_y,
                 TILE_SIZE, TILE_SIZE
             )
-            pygame.draw.rect(screen, GRAY, rect, 1)
-
+            if row_type == "road":
+                pygame.draw.rect(screen, ROAD_GRAY, rect)
+            else:
+                pygame.draw.rect(screen, GRAY, rect, 1)
             tile = get_tile(row, col)
             if tile == "tree":
                 pygame.draw.rect(screen, BROWN, rect.inflate(-30, -30))
-                pygame.draw.circle(screen, GREEN, rect.center, TILE_SIZE // 3)
+                pygame.draw.circle(screen, GREEN, rect.center, TILE_SIZE//3)
             elif tile == "wall":
                 pygame.draw.rect(screen, BLACK, rect)
-            elif tile == "road":
-                pygame.draw.rect(screen, ROAD_COLOR, rect)
 
+# ------------------ CARS ------------------
 def spawn_cars(camera_y):
-    """Spawn cars randomly on visible road rows."""
-    start_row = camera_y // TILE_SIZE
-    end_row = (camera_y + HEIGHT) // TILE_SIZE + 1
-
+    start_row = (camera_y // TILE_SIZE) - 2
+    end_row = ((camera_y + HEIGHT) // TILE_SIZE) + 2
     for row in range(start_row, end_row):
         if get_row_type(row) == "road":
-            if random.random() < 0.03:  # slightly higher spawn chance
-                direction = row_directions[row]
-
-                # Decide if car spawns at side or anywhere on road
-                if random.random() < 0.5:
-                    # normal: spawn at edge
+            if not any(car["row"] == row for car in cars):
+                if random.random() < 0.1:
+                    direction = row_directions[row]
+                    base_img = random.choice(car_images)
                     if direction == "left":
-                        x = WIDTH
+                        car_img = base_img
+                        x = WIDTH + random.randint(0, 3) * TILE_SIZE
                     else:
-                        x = -TILE_SIZE
-                else:
-                    # new: spawn somewhere along the road
-                    x = random.randint(TILE_SIZE, WIDTH - TILE_SIZE)
-
-                y = row * TILE_SIZE - camera_y
-                cars.append({
-                    "rect": pygame.Rect(x, y, TILE_SIZE, TILE_SIZE),
-                    "row": row,
-                    "dir": direction,
-                    "speed": random.randint(4, 7)
-                })
+                        car_img = pygame.transform.flip(base_img, True, False)
+                        x = -TILE_SIZE - random.randint(0, 3) * TILE_SIZE
+                    y = row * TILE_SIZE - camera_y
+                    cars.append({
+                        "rect": pygame.Rect(x, y, TILE_SIZE, TILE_SIZE),
+                        "row": row,
+                        "dir": direction,
+                        "speed": random.randint(4, 7),
+                        "image": car_img
+                    })
 
 def update_cars(camera_y):
-    """Move and draw cars."""
-    global running
     for car in cars[:]:
-        row_offset = car["row"] * TILE_SIZE - camera_y
-        car["rect"].y = row_offset  # adjust Y position with camera
         if car["dir"] == "left":
             car["rect"].x -= car["speed"]
         else:
             car["rect"].x += car["speed"]
-
-        # remove cars that move off screen
-        if car["rect"].right < 0 or car["rect"].left > WIDTH:
+        car["rect"].y = car["row"] * TILE_SIZE - camera_y
+        if car["rect"].right < -200 or car["rect"].left > WIDTH + 200:
             cars.remove(car)
-            continue
+        else:
+            screen.blit(car["image"], (car["rect"].x, car["rect"].y))
 
-        pygame.draw.rect(screen, CAR_COLOR, car["rect"])
-
-        # collision check with player
-        player_rect = pygame.Rect(
-            player_col * TILE_SIZE,
-            player_row * TILE_SIZE - camera_y,
-            TILE_SIZE, TILE_SIZE
-        )
-        if car["row"] == player_row and car["rect"].colliderect(player_rect):
-            game_over()
-
-# --- Game Over ---
-def game_over():
-    global running
-    over_text = font.render("GAME OVER!", True, (255, 0, 0))
-    screen.blit(over_text, (WIDTH // 2 - 100, HEIGHT // 2))
-    pygame.display.flip()
-    pygame.time.wait(2000)
-    pygame.quit()
-    sys.exit()
-
-# --- Direction tracker ---
-direction = "down"
-
-def main():
-    global player_row, player_col, frame_index, frame_timer, direction, score, farthest_row, running
-    running = True
-    while running:
+# ------------------ USERNAME GUI ------------------
+def get_username():
+    username = ""
+    active = False
+    font = pygame.font.SysFont(None, 50)
+    button_font = pygame.font.SysFont(None, 40)
+    input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 25, 300, 50)
+    start_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT // 2 + 50, 150, 50)
+    while True:
         screen.fill(WHITE)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_box.collidepoint(event.pos):
+                    active = True
+                else:
+                    active = False
+                if start_button.collidepoint(event.pos) and username.strip() != "":
+                    return username.strip()
+            if event.type == pygame.KEYDOWN and active:
+                if event.key == pygame.K_RETURN and username.strip() != "":
+                    return username.strip()
+                elif event.key == pygame.K_BACKSPACE:
+                    username = username[:-1]
+                else:
+                    username += event.unicode
+        color = (0, 0, 0) if active else (150, 150, 150)
+        pygame.draw.rect(screen, color, input_box, 3)
+        txt_surface = font.render(username, True, BLACK)
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        pygame.draw.rect(screen, GREEN_BTN, start_button)
+        btn_text = button_font.render("Start Game", True, WHITE)
+        screen.blit(btn_text, (start_button.x + 10, start_button.y + 10))
+        label = font.render("Enter your username:", True, BLACK)
+        screen.blit(label, (WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 100))
+        pygame.display.flip()
+        clock.tick(60)
+
+# ------------------ GAME OVER GUI ------------------
+def game_over_screen(score):
+    font = pygame.font.SysFont(None, 80)
+    button_font = pygame.font.SysFont(None, 40)
+    play_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 50)
+    quit_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 120, 200, 50)
+
+    while True:
+        screen.fill(WHITE)
+        text = font.render("GAME OVER", True, RED)
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+
+        pygame.draw.rect(screen, GREEN_BTN, play_button)
+        play_text = button_font.render("Play Again", True, WHITE)
+        screen.blit(play_text, (play_button.x + 20, play_button.y + 10))
+
+        pygame.draw.rect(screen, GRAY_BTN, quit_button)
+        quit_text = button_font.render("Quit", True, WHITE)
+        screen.blit(quit_text, (quit_button.x + 60, quit_button.y + 10))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-
-            if event.type == pygame.KEYDOWN:
-                new_row, new_col = player_row, player_col
-                if event.key == pygame.K_UP:
-                    new_row -= 1
-                    direction = "up"
-                if event.key == pygame.K_DOWN:
-                    new_row += 1
-                    direction = "down"
-                if event.key == pygame.K_LEFT:
-                    new_col -= 1
-                    direction = "left"
-                if event.key == pygame.K_RIGHT:
-                    new_col += 1
-                    direction = "right"
-
-                if get_tile(new_row, new_col) not in ("tree", "wall"):
-                    player_row, player_col = new_row, new_col
-                    if player_row < farthest_row:
-                        score += 1
-                        farthest_row = player_row
-
-        # Camera follows vertically
-        camera_y = player_row * TILE_SIZE - HEIGHT // 2 + TILE_SIZE // 2
-
-        # Draw world
-        draw_grid(camera_y)
-
-        # Cars
-        spawn_cars(camera_y)
-        update_cars(camera_y)
-
-        # Animation
-        frame_timer += 1
-        if frame_timer >= ANIM_SPEED:
-            frame_index = (frame_index + 1) % len(cat_frames[direction])
-            frame_timer = 0
-        frame = cat_frames[direction][frame_index]
-
-        # Draw player
-        screen.blit(
-            frame,
-            (player_col * TILE_SIZE, player_row * TILE_SIZE - camera_y)
-        )
-
-        # Score
-        score_text = font.render(f"Score: {score}", True, BLACK)
-        screen.blit(score_text, (10, 10))
+                conn.close()
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if play_button.collidepoint(event.pos):
+                    return True
+                if quit_button.collidepoint(event.pos):
+                    conn.close()
+                    pygame.quit()
+                    sys.exit()
 
         pygame.display.flip()
         clock.tick(60)
 
-    pygame.quit()
-    sys.exit()
+# ------------------ GAME LOOP ------------------
+def main():
+    global cars
+    username = get_username()
+    while True:  # loop to allow play again
+        player_row, player_col = 5, GRID_WIDTH // 2
+        frame_index = 0
+        frame_timer = 0
+        ANIM_SPEED = 8
+        score = 0
+        visited_rows = set([player_row])
+        direction = "down"
+        cars = []
+
+        running = True
+        while running:
+            screen.fill(WHITE)
+            # --- Input ---
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    conn.close()
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    new_row, new_col = player_row, player_col
+                    if event.key == pygame.K_UP:
+                        new_row -= 1
+                        direction = "up"
+                    if event.key == pygame.K_DOWN:
+                        new_row += 1
+                        direction = "down"
+                    if event.key == pygame.K_LEFT:
+                        new_col -= 1
+                        direction = "left"
+                    if event.key == pygame.K_RIGHT:
+                        new_col += 1
+                        direction = "right"
+                    if get_tile(new_row, new_col) not in ("tree", "wall"):
+                        player_row, player_col = new_row, new_col
+                        if player_row not in visited_rows:
+                            visited_rows.add(player_row)
+                            score += 1
+
+            camera_y = player_row * TILE_SIZE - HEIGHT // 2 + TILE_SIZE // 2
+            draw_grid(camera_y)
+            spawn_cars(camera_y)
+            update_cars(camera_y)
+
+            # Collision
+            player_rect = pygame.Rect(player_col * TILE_SIZE,
+                                      player_row * TILE_SIZE - camera_y,
+                                      TILE_SIZE, TILE_SIZE)
+            if any(player_rect.colliderect(car["rect"]) for car in cars):
+                # Save score
+                c.execute("INSERT INTO scores (username, score) VALUES (?, ?)", (username, score))
+                conn.commit()
+                if game_over_screen(score):
+                    break  # restart game loop
+
+            # Player animation
+            frame_timer += 1
+            if frame_timer >= ANIM_SPEED:
+                frame_index = (frame_index + 1) % len(cat_frames[direction])
+                frame_timer = 0
+            frame = cat_frames[direction][frame_index]
+            screen.blit(frame, (player_col * TILE_SIZE, player_row * TILE_SIZE - camera_y))
+
+            # Draw score
+            font = pygame.font.SysFont(None, 40)
+            score_text = font.render(f"Score: {score}", True, BLACK)
+            screen.blit(score_text, (10, 10))
+
+            pygame.display.flip()
+            clock.tick(60)
 
 if __name__ == "__main__":
     main()
