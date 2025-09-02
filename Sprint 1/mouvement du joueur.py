@@ -1,5 +1,5 @@
 """
-Nom du projet : Rue en Folie
+Nom du projet : mouvement du joueur
 Auteur       : Rafael Rico et Luca Giubbilei
 Date         : 02/09/2025
 Version      : 1.0

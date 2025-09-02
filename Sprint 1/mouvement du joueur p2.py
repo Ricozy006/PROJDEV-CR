@@ -1,8 +1,8 @@
 """
-Nom du projet : Rue en Folie (Version grille)
+Nom du projet : mouvement du joueur (Version grille)
 Auteur       : Rafael Rico et Luca Giubbilei
 Date         : 02/09/2025
-Version      : 1.2
+Version      : 1.1
 Description  : Jeu en Python avec grille visible et mouvement du joueur case par case
 """
 
