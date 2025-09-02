@@ -6,6 +6,8 @@ Version      : 1.0
 Description  : Jeu Python avec joueur sur grille et cubes obstacles en mouvement
 """
 
+# Généré par chatGPT
+
 import pygame
 import random
 
