@@ -6,6 +6,8 @@ Version      : 1.0
 Description  : jeu pour tester les mouvements des blocs
 """
 
+# Généré par chatGPT
+
 import pygame
 import random
 
