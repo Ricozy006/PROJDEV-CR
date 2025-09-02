@@ -1,9 +1,9 @@
 """
-Nom du projet : Rue en Folie - Lanes Smooth Cars No Overlap
+Nom du projet : Rue en Folie - Smooth Cars No Overlap Fixed
 Auteur       : Rafael Rico et Luca Giubbilei
 Date         : 02/09/2025
-Version      : 1.5
-Description  : Jeu Python avec routes, voitures lisses, joueur bloc par bloc, et voitures qui ne se chevauchent pas
+Version      : 1.6
+Description  : Jeu Python avec routes, voitures lisses, joueur bloc par bloc, et voitures qui ne se chevauchent jamais
 """
 
 import pygame
@@ -14,7 +14,7 @@ pygame.init()
 # Fenêtre de jeu
 L, H = 800, 600
 fenetre = pygame.display.set_mode((L, H))
-pygame.display.set_caption("Rue en Folie - No Car Overlap")
+pygame.display.set_caption("Rue en Folie - Smooth Cars No Overlap")
 
 # Couleurs
 BLANC = (255, 255, 255)
@@ -31,15 +31,22 @@ rows = H // cell_size
 # Lignes de routes (où les voitures circulent)
 lanes = [2, 4, 6, 8, 10]
 
-# Cubes obstacles (voitures) - pas de chevauchement
+# Création des voitures avec distance minimale entre elles
 cubes = []
+min_gap = 2 * cell_size  # distance minimale entre voitures sur la même lane
 for row in lanes:
     num_cars = random.randint(2, 4)
-    spacing = L // num_cars  # espace minimum entre les voitures
+    direction = random.choice([-1, 1])
+    speeds = [random.uniform(2, 6) for _ in range(num_cars)]
+    # Répartir les voitures avec un espacement minimal
+    positions = [i * (L // num_cars) for i in range(num_cars)]
+    random.shuffle(positions)
     for i in range(num_cars):
-        vx = random.choice([-1, 1]) * random.uniform(2, 6)
-        x = i * spacing
-        cubes.append({"x": x, "row": row, "vx": vx})
+        cubes.append({
+            "x": positions[i],
+            "row": row,
+            "vx": direction * speeds[i]
+        })
 
 # Spawn joueur en position sûre
 safe = False
@@ -81,12 +88,30 @@ while running:
     player_pos[1] = max(0, min(rows - 1, player_pos[1]))
 
     # Déplacement des voitures (smooth) sans chevauchement
-    for cube in cubes:
-        cube["x"] += cube["vx"]
-        if cube["vx"] > 0 and cube["x"] > L:
-            cube["x"] = -cell_size
-        elif cube["vx"] < 0 and cube["x"] < -cell_size:
-            cube["x"] = L
+    for row in lanes:
+        # Extraire les voitures de cette lane
+        lane_cars = [c for c in cubes if c["row"] == row]
+        for car in lane_cars:
+            car["x"] += car["vx"]
+            # Wrap-around
+            if car["vx"] > 0 and car["x"] > L:
+                car["x"] = -cell_size
+            elif car["vx"] < 0 and car["x"] < -cell_size:
+                car["x"] = L
+
+        # Vérifier et corriger chevauchement minimal
+        lane_cars.sort(key=lambda c: c["x"])
+        for i in range(len(lane_cars)):
+            next_i = (i + 1) % len(lane_cars)
+            car = lane_cars[i]
+            next_car = lane_cars[next_i]
+            gap = (next_car["x"] - car["x"]) % L
+            if gap < min_gap:
+                # Ajuster la voiture suivante pour maintenir l'écart minimal
+                if car["vx"] > 0:
+                    next_car["x"] = (car["x"] + min_gap) % L
+                else:
+                    car["x"] = (next_car["x"] + min_gap) % L
 
     # Détection collision
     collision = any(player_pos[0]*cell_size == int(c["x"]) and player_pos[1] == c["row"] for c in cubes)
