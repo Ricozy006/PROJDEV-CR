@@ -2,7 +2,7 @@
 Nom du projet : Rue en Folie - Grille et obstacles
 Auteur       : Rafael Rico et Luca Giubbilei
 Date         : 02/09/2025
-Version      : 1.3
+Version      : 1.0
 Description  : Jeu Python avec joueur sur grille et cubes obstacles en mouvement
 """
 
