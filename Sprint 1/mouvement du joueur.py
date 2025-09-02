@@ -3,7 +3,7 @@ Nom du projet : mouvement du joueur
 Auteur       : Rafael Rico et Luca Giubbilei
 Date         : 02/09/2025
 Version      : 1.0
-Description  : Petit jeu en Python où vous devez traverser des obstacles sans être touché
+Description  : Petit jeu pour les mouvements du joueur
 """
 
 import pygame
