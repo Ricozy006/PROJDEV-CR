@@ -16,7 +16,7 @@ L, H = 800, 600
 fenetre = pygame.display.set_mode((800, 600))
 
 # Paramètres
-num_cubes = 5      # nombre de cubes
+num_cubes = 4      # nombre de cubes
 cube_size = 40     # longueur et largeur d'un cube
 lanes = [100, 200, 300, 400]  # positions des lignes (y)
 
