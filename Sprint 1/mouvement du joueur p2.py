@@ -37,14 +37,14 @@ while en_cours:
             en_cours = False
 
     # Déplacement du joueur
-    touches = pygame.key.get_pressed()
-    if touches[pygame.K_UP] or touches[pygame.K_w]:
+    appuie = pygame.key.get_pressed()
+    if appuie[pygame.K_UP] or appuie[pygame.K_w]:
         y_case = max(0, y_case - 1)
-    if touches[pygame.K_DOWN] or touches[pygame.K_s]:
+    if appuie[pygame.K_DOWN] or appuie[pygame.K_s]:
         y_case = min(LIGNES - 1, y_case + 1)
-    if touches[pygame.K_LEFT] or touches[pygame.K_a]:
+    if appuie[pygame.K_LEFT] or appuie[pygame.K_a]:
         x_case = max(0, x_case - 1)
-    if touches[pygame.K_RIGHT] or touches[pygame.K_d]:
+    if appuie[pygame.K_RIGHT] or appuie[pygame.K_d]:
         x_case = min(COLONNES - 1, x_case + 1)
 
     # Affichage

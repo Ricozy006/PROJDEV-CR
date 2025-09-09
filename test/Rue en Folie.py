@@ -107,7 +107,7 @@ while running:
 
     # Dessiner joueur
     pygame.draw.rect(fenetre, BLEU, (player_col*TAILLE_CASE, player_row*TAILLE_CASE, TAILLE_CASE, TAILLE_CASE))
-
+##
     pygame.display.flip()
 
 pygame.quit()
