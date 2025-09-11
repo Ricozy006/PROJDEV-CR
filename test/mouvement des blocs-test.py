@@ -1,25 +1,28 @@
 import pygame, random
 
 pygame.init()
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 900, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Autoroute de cubes")
 clock = pygame.time.Clock()
 
 # --- paramètres faciles à modifier ---
-NUM_CUBES = 4 #nombres de cubes
+NUM_CUBES = 15 #nombres de cubes
 CUBE_SIZE = 40
-LANES = [100, 145, 250, 320, 420]   # positions centrales (y) des "bandes" (voies) la bonne distance serrait de 45
+LANES = [100, 141, 250, 320, 420]   # positions centrales (y) des "bandes" (voies) la bonne distance serrait de 45
 LANE_HEIGHT = CUBE_SIZE    # hauteur de chaque bande noire
 # --------------------------------------
+#notes:
+# "100" corespond à la première ligne (toute en haut) suivit de "145"
 
 # Création des cubes : chaque cube a x, y (centre de la voie) et vx (vitesse)
 cubes = []
 for _ in range(NUM_CUBES):
     y = random.choice(LANES)
-    x = random.randint(1, WIDTH - CUBE_SIZE)
-    vx = random.choice([-1, 1]) * random.randint(1, 6)
+    x = random.randint(2, WIDTH - CUBE_SIZE)
+    vx = random.choice([-5, 5]) * random.randint(1, 2)
     cubes.append({"x": x, "y": y, "vx": vx})
+
 
 running = True
 while running:
