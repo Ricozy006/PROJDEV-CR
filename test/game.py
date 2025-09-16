@@ -10,7 +10,7 @@ Description  : Jeu Python avec joueur sur grille et cubes obstacles en mouvement
 import pygame
 import random
 import time
-import db   # notre module base de données
+from test import db
 
 pygame.init()
 db.init_db()  # Initialisation DB
