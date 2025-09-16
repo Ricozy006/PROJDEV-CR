@@ -19,12 +19,14 @@ lane_speeds = {
     420: 4
 }
 
+
 cubes = []
 for _ in range(NUM_CUBES):
     y = random.choice(LANES)
     x = random.randint(0, WIDTH - CUBE_SIZE)
     vx = lane_speeds[y]
-    cubes.append({"x": x, "y": y, "vx": vx})
+    cubes.append({"x": x, "y": y, "vx": vx, "stop_time": 0})
+
 
 running = True
 while running:
@@ -32,12 +34,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+
     for c in cubes:
+        current_time = pygame.time.get_ticks()
+
+        # Si le cube est en pause (moins d'une seconde écoulée depuis stop_time)
+        if current_time - c["stop_time"] < 1000:
+            continue  # Cube attend, ne bouge pas
+
+        # Bouge le cube
         c["x"] += c["vx"]
+
+        # Si cube sort à droite
         if c["x"] > WIDTH:
             c["x"] = -CUBE_SIZE
+            c["stop_time"] = current_time  # Pause 1 sec avant de repartir
+
+        # Si cube sort à gauche
         elif c["x"] < -CUBE_SIZE:
             c["x"] = WIDTH
+            c["stop_time"] = current_time  # Pause 1 sec avant de repartir
 
     screen.fill((50, 150, 50))
 
