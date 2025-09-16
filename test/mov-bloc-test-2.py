@@ -7,9 +7,9 @@ pygame.display.set_caption("Autoroute de cubes")
 clock = pygame.time.Clock()
 
 # --- paramètres faciles à modifier ---
-NUM_CUBES = 15 #nombres de cubes
+NUM_CUBES = 1 #nombres de cubes
 CUBE_SIZE = 40
-LANES = [100, 141, 250, 320, 420]   # positions centrales (y) des "bandes" (voies) la bonne distance serrait de 45
+LANES = [100]#, #141, 250, 320, 420]   # positions centrales (y) des "bandes" (voies) la bonne distance serrait de 45
 LANE_HEIGHT = CUBE_SIZE    # hauteur de chaque bande noire
 # --------------------------------------
 #notes:
@@ -20,18 +20,28 @@ cubes = []
 for _ in range(NUM_CUBES):
     y = random.choice(LANES)
     x = random.randint(2, WIDTH - CUBE_SIZE)
-    vx = random.choice([-5, 5]) * random.randint(1, 2)
+    vx = random.choice([1,1]) * random.randint(1, 2)
     cubes.append({"x": x, "y": y, "vx": vx})
 
 
 running = True
 while running:
+    def get_positions(cubes):
+        """
+        Renvoie une liste des positions actuelles des cubes.
+        Chaque position est un tuple (x, y).
+        """
+        return [(c["x"], c["y"]) for c in cubes]
+    positions = get_positions(cubes)
+    print(positions)
+
     # 1) gestion des événements (fenêtre)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     # 2) mise à jour des positions (déplacement + bouclage à l'écran)
+
     for c in cubes:
         c["x"] += c["vx"]
         # si dépasse la droite -> réapparaît à gauche (et vice-versa)
