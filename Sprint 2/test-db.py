@@ -66,7 +66,6 @@ def register():
 #fonction pour ouvrir le jeux une fois le login bien éffectuer
 def open_game():
     global username1
-    messagebox.showinfo("Inscription", "Bienvenue ! Votre inscription a été réussie avec succès.")
     os.system(f'python "C:\\Users\\pr70bfr\\PycharmProjects\\PROJDEV-CR1\\Sprint 2\\Crossy Road.py" {username1}')
 
 
