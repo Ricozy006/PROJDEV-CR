@@ -1,6 +1,14 @@
 Durant le sprint 2, nous avons mis en place le système de login avec python et la base de donnée également avec python ainsi que fais quelques petites amélioration pour le jeu
 et pour le mld et la maquette
 
+
+
 Pour la bdd il vous faudra le package "mysql-connector-python", "pymysql"
 
 Si besoin de d'autres explications vous les trouverez dans le "read-me" pricipale
+
+
+
+
+Fonctionnement du jeu : L'objectif du jeu est de traverser les routes sans vous faire écraser par les voitures et d'atteindre tout en haut. Quand vous arrivez en haut
+votre score il augment de 1 et vous recommencé tout en bas
