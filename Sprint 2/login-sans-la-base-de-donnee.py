@@ -1,3 +1,8 @@
+"""
+Nom du projet: Crossy road - login non connecter à la base de donnée
+Auteur       : Rafael Rico et Luca Giubbilei
+Date         : 17/09/2025
+"""
 from tkinter import *
 from tkinter import messagebox
 
@@ -11,10 +16,12 @@ height = 150
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
+#chagpt nous a un peu aidé pour réaliser cette partit
 x = (screen_width - width) // 2
 y = (screen_height - height) // 5
 
 root.geometry(f"{width}x{height}+{x}+{y}")
+
 
 def login():
     messagebox.showinfo("Connexion", "Bonjour ! Vous avez bien été connecté.")
@@ -49,12 +56,13 @@ entry_password.pack(side=LEFT, fill="x", expand=True)
 
 # Frame pour les boutons
 frame_buttons = Frame(frame_main)
-frame_buttons.pack(pady=15)
+frame_buttons.pack(pady=5)
 
+#Bouttons
 button_register = Button(frame_buttons, text="S'inscrire", width=15, command=register)
-button_register.pack(side=LEFT, padx=10, syy=15)
+button_register.pack(side=LEFT, padx=10, pady=5)
 
 button_login = Button(frame_buttons, text="Se connecter", width=15, command=login)
-button_login.pack(side=LEFT, padx=10)
+button_login.pack(side=LEFT, padx=10, pady=3)
 
 root.mainloop()
