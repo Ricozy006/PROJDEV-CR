@@ -64,9 +64,9 @@ def register():
         messagebox.showerror("Erreur", "Veuillez rentrer un nom d'utilisateur et un mot de passe.")
 
 #fonction pour ouvrir le jeux une fois le login bien éffectuer
-
 def open_game():
     global username1
+    messagebox.showinfo("Inscription", "Bienvenue ! Votre inscription a été réussie avec succès.")
     os.system(f"python 2048_game_1.py {username1}")
 
 
