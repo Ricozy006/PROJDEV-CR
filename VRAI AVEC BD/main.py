@@ -70,7 +70,7 @@ def login_screen():
                     else:
                         message = 'Login failed!'
                 if register_button.collidepoint(event.pos):
-                    uid = db.create_user(username_box.text, password_box.text)b
+                    uid = db.create_user(username_box.text, password_box.text)
                     if uid:
                         user_id = db.login(username_box.text, password_box.text)
                         running = False
