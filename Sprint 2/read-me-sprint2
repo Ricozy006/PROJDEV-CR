@@ -1,6 +1,5 @@
-Durant le sprint 2, nous avons mis en place le système de login avec python et la base de donnée également avec python ainsi que fais quelques petites amélioration pour le jeu
-et pour le mld et la maquette
-
+Durant le sprint 2, nous avons mis en place le système de login avec python et la base de donnée également avec python ainsi que fais quelques petites
+amélioration pour le jeu et pour le mld et la maquette. On a aussi ajouté des images dans le jeu principale comme par eemple un poulet et des voitures.
 
 
 Pour la bdd il vous faudra le package "mysql-connector-python", "pymysql"
@@ -8,7 +7,9 @@ Pour la bdd il vous faudra le package "mysql-connector-python", "pymysql"
 Si besoin de d'autres explications vous les trouverez dans le "read-me" pricipale
 
 
-
-
 Fonctionnement du jeu : L'objectif du jeu est de traverser les routes sans vous faire écraser par les voitures et d'atteindre tout en haut. Quand vous arrivez en haut
-votre score il augment de 1 et vous recommencé tout en bas
+votre score il augment de 1 et vous recommencé tout en bas dans un niveau encore plus difficile que celui d'avant. Si le poulet il touche une voiture le jeu il se termine.
+Pour rejouer vous devez appuyer R.
+
+Controles : pour les mouvements dans le jeu on a utilisé que les flèches.
+
