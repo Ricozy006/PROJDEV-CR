@@ -301,7 +301,7 @@ def login():
             messagebox.showinfo("Connexion réussie", f"Bienvenue, {username}!")
             open_game()
         else:
-            messagebox.showerror("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
+            messagebox.showerror("Erreur", "Nom d'utilisateur ou mot de passe incorrect ou le compte n'existe pas.")
     else:
         messagebox.showerror("Erreur", "Le nom d'utilisateur et le mot de passe sont requis.")
 
