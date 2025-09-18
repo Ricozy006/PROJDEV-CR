@@ -1,2 +1,6 @@
 Durant le sprint 2, nous avons mis en place le système de login avec python et la base de donnée également avec python ainsi que fais quelques petites amélioration pour le jeu
 et pour le mld et la maquette
+
+Pour la bdd il vous faudra le package "mysql-connector-python", "pymysql"
+
+Si besoin de d'autres explications vous les trouverez dans le "read-me" pricipale

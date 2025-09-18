@@ -69,6 +69,8 @@ def open_game():
     messagebox.showinfo("Inscription", "Bienvenue ! Votre inscription a été réussie avec succès.")
     os.system(f"python 2048_game_1.py {username1}")
 
+    # C:\\Users\\pr70bfr\\PycharmProjects\\PROJDEV-CR1\\test-db\\2048_game_1.py
+
 
 def login():
     username = entry_username.get()
