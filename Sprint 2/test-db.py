@@ -67,9 +67,8 @@ def register():
 def open_game():
     global username1
     messagebox.showinfo("Inscription", "Bienvenue ! Votre inscription a été réussie avec succès.")
-    os.system(f"python 2048_game_1.py {username1}")
+    os.system(f'python "C:\\Users\\pr70bfr\\PycharmProjects\\PROJDEV-CR1\\Sprint 2\\Crossy Road.py" {username1}')
 
-    # C:\\Users\\pr70bfr\\PycharmProjects\\PROJDEV-CR1\\test-db\\2048_game_1.py
 
 
 def login():
