@@ -101,7 +101,7 @@ def open_game():
     pygame.init()
     LARGEUR, HAUTEUR = 900, 1000
     screen = pygame.display.set_mode((LARGEUR, HAUTEUR))
-    pygame.display.set_caption("Autoroute du poulet")
+    pygame.display.set_caption("Crossy Road")
     clock = pygame.time.Clock()
 
     TAILLE_CASE = 50
@@ -133,6 +133,7 @@ def open_game():
 
         voiture_gauche_img = pygame.image.load("car_left.png").convert_alpha()
         voiture_gauche_img = pygame.transform.scale(voiture_gauche_img, (TAILLE_CASE, TAILLE_CASE))
+
     except Exception as e:
         pygame.quit()
         sys.exit()
@@ -263,8 +264,12 @@ def open_game():
                 for voiture in voitures:
                     voie = voiture[1]
                     voiture[2] = vitesses_voies[voie]
-
-
+                print("score :" ,score)
+                print("")
+                for voie in VOIES:
+                    print(f"Voie {voie} : {vitesses_voies[voie]}")
+                for i in range(2):
+                    print("")
 
         # --- DESSIN À L'ÉCRAN ---
         screen.fill((50, 150, 50))  # couleur herbe
